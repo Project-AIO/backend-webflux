@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    group:
+      test:
+        - test
+      local:
+        - local
+      dev:
+        - develop
+      master:
+        - master
+      core:
+        - core
+    default: local
+
+

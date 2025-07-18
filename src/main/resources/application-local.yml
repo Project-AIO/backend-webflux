@@ -1,0 +1,147 @@
+server:
+  port: 8100
+
+spring:
+  main:
+    web-application-type: reactive
+
+  servlet:
+    multipart: # Servlet stack 무시, WebFlux라 사실 사용안됨. 참고용.
+      max-file-size: 50MB
+      max-request-size: 1000MB
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 2s
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+      ttl:
+        short: 10s
+        default: 1h
+        user-cache: 3h
+  security:
+    oauth2:
+      client:
+        registration:
+          local-client:
+            client-id: local-client
+            client-secret: secret
+            scope: openid, profile
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8090/api/v1/login/sso"
+        provider:
+          local-client:
+            issuer-uri: http://localhost:9000
+      resource:
+        jwt:
+          issuer-uri: http://localhost:9000
+  mvc:
+    async:
+      request-timeout: 86400000  # 1 day in milliseconds 이 설정을 안 하면 채팅 sse 도중에 타임아웃 에러가 뜸
+
+  web:
+    resources:
+      static-locations: file:/aio
+      add-mappings: false # favicons, robots.txt, etc. are not served from the static locations
+  application:
+    name: aio
+  rabbitmq:
+    listener:
+      simple:
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          back-off:
+            delay: 1000ms # 첫 재시도 지연 시간
+            multiplier: 1.5 # 재시도 간 지연 시간 증가 배율
+            max-delay: 5000ms
+    host: localhost
+    port: 5672
+    username: user
+    password: pass
+  datasource:
+    #    profileSQL=true: Driver 에서 전송하는 쿼리를 출력합니다.
+    #    logger=Slf4JLogger: Driver 에서 쿼리 출력시 사용할 로거를 설정합니다.
+    #    MySQL 드라이버: 기본값은 System.err 로 출력하도록 설정되어 있기 때문에 필수로 지정해 줘야 합니다.
+    #    MariaDB 드라이버: Slf4j 를 이용하여 로그를 출력하기 때문에 설정할 필요가 없습니다.
+    #    maxQuerySizeToLog=999999: 출력할 쿼리 길이
+    url: jdbc:mysql://localhost:3306/aio?profileSQL=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Seoul&maxQuerySizeToLog=999999
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 1234
+    hikari:
+      connection-timeout: 300000
+      register-mbeans: true
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    defer-datasource-initialization: true
+
+jwt:
+  header: Authorization
+  #HS512 ????? ??? ??? ??? 512bit, ? 64byte ??? secret key? ???? ??.
+  #echo 'silvernine-tech-spring-boot-jwt-tutorial-secret-silvernine-tech-spring-boot-jwt-tutorial-secret'|base64
+  secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
+  access-token-validity-in-seconds: 60 #60 * 30 (30분 = 1800)
+  refresh-token-validity-in-seconds: 1800 #60 * 60 * 24 (1일 = 86400)
+  cache:
+    caffeine-ttl-minutes: 3
+    redis-ttl-minutes: 15
+
+aes:
+  key: 123456789ABCDEF!
+  algorithm: AES/CBC/PKCS5Padding
+
+core:
+  server:
+    url: http://localhost:8090/api/v1/core/retrieval/doc/contents
+    model :
+      url : http://localhost:8090/api/v1/core/langmodels
+    document:
+      url: http://localhost:8090/api/v1/core/retrieval/doc/%s
+
+logging:
+  level:
+    com.idt: DEBUG
+    com.zaxxer.hikari: DEBUG
+ai:
+  url: http://localhost:8090/api/v1/core/answer
+sse:
+  doc:
+    subscription:
+      key: ABCDEF1234567890
+      bulk:
+        key: 123456789ABCDEF!
+file:
+  upload:
+    temp-root: /temp
+license:
+  hmac:
+    key: UuamF3FC9wLlLzoK0zA30EB7OIQpzv1K/XPT7wT6OvU=
+  aes:
+    key: lzs5PWSGqeIiApD6dbH/9n2V6EFkBRVhdzQXpQxXsT8=
+sso:
+  server:
+    url: http://localhost:9000
+  oauth2:
+    url: http://localhost:9000/oauth2/token
+  jwks:
+    url: http://localhost:9000/oauth2/jwks
+doc:
+  upload:
+    tmp-dir:        /aio/tmp
+    final-dir:      /aio
+clamav:
+  host: localhost
+  port: 3310
