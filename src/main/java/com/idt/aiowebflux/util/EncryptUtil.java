@@ -17,10 +17,6 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -29,6 +25,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
@@ -59,7 +58,7 @@ public class EncryptUtil {
     }
 
     public String validateLicenseKey(final String token) {
-        try{
+        try {
             // 1) JWE 파싱 및 복호화
             final JWEObject jweObject = JWEObject.parse(token);
             final DirectDecrypter decrypter = new DirectDecrypter(aesKeyBytes);

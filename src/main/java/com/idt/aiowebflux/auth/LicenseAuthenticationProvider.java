@@ -6,6 +6,7 @@ import com.idt.aiowebflux.exception.DomainExceptionCode;
 import com.idt.aiowebflux.repository.LicenseRepository;
 import com.idt.aiowebflux.service.AccountRoleService;
 import com.idt.aiowebflux.util.EncryptUtil;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,8 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * SecurityConfig에서 LicenseAuthenticationProvider를 등록하여 사용 (authenticationManager 메서드)
@@ -29,7 +28,7 @@ public class LicenseAuthenticationProvider implements AuthenticationProvider {
 
 
     @Override
-    public Authentication authenticate(final Authentication raw)   {
+    public Authentication authenticate(final Authentication raw) {
         final String id = raw.getName();
         final String pw = raw.getCredentials().toString();
 
@@ -49,7 +48,6 @@ public class LicenseAuthenticationProvider implements AuthenticationProvider {
         if (encryptUtil.validateLicenseKey(license.getLicenseKey()).isBlank()) {       // 라이선스 검증
             throw DomainExceptionCode.USER_LICENSE_KEY_VALIDATION_FAILED.newInstance("라이선스 키가 유효하지 않습니다.");
         }
-
 
         final List<SimpleGrantedAuthority> roles = accountSecret.roleNames().stream()
                 .map(SimpleGrantedAuthority::new)

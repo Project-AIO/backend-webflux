@@ -21,5 +21,5 @@ public enum State {
 
 
     UPLOADING,
-    AVAILABLE;
+    AVAILABLE
 }

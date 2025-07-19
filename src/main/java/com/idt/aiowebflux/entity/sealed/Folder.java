@@ -53,7 +53,7 @@ public sealed interface Folder permits Folder.Knowledge, Folder.KnowledgeFolder,
             if (folderId == null) {
                 throw new IllegalArgumentException("knowledgeId and folderId must not be null");
             }
-            return PREFIX + folderId +"_";
+            return PREFIX + folderId + "_";
         }
     }
 

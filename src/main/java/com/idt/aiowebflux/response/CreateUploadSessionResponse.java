@@ -12,5 +12,6 @@ public record CreateUploadSessionResponse(
             String serverFileId,
             String filename,
             long size
-    ) {}
+    ) {
+    }
 }

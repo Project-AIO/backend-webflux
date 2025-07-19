@@ -3,10 +3,13 @@ package com.idt.aiowebflux.config;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.idt.aiowebflux.auth.RoleChangeSubscriber;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.idt.aiowebflux.config.redis.RedisProperties;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
+import java.time.Duration;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,21 +19,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.PatternTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import java.time.Duration;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Configuration
 @EnableCaching
@@ -39,12 +37,10 @@ import java.util.stream.Collectors;
 public class RedisConfig {
     private final RedisProperties props;
 
-    /* 1. Lettuce ClientResources */
     @Bean(destroyMethod = "shutdown")              // 안전한 종료
     ClientResources lettuceClientResources() {
         return DefaultClientResources.builder().build();
     }
-    /* 2. LettuceConnectionFactory – Pool + Timeout */
     @Bean
     LettuceConnectionFactory redisConnectionFactory(final ClientResources clientResources) {
         // Stand-alone. Sentinel/Cluster 는 별도 builder 사용
@@ -70,7 +66,7 @@ public class RedisConfig {
         return new LettuceConnectionFactory(standalone, clientConfig);
     }
 
-    /* 3. 공통 Serializer – Jackson(PolymorphicTypeValidator 필수) */
+    // 공통 Serializer – Jackson(PolymorphicTypeValidator 필수) */
     @Bean
     GenericJackson2JsonRedisSerializer jsonSerializer(final ObjectMapper om) {
         final ObjectMapper copy = om.copy() //글로벌 ObjectMapper 오염 방지용 복사본
@@ -81,25 +77,23 @@ public class RedisConfig {
         return new GenericJackson2JsonRedisSerializer(copy);
     }
 
-    /* 4. RedisTemplate<String, Object> – Key:String, Value:JSON */
+    // RedisTemplate<String, Object> – Key:String, Value:JSON
     @Bean
-    RedisTemplate<String, Object> redisTemplate(final LettuceConnectionFactory cf,
-                                                final GenericJackson2JsonRedisSerializer json) {
-        RedisTemplate<String, Object> tpl = new RedisTemplate<>();
-        tpl.setConnectionFactory(cf);
+    public ReactiveStringRedisTemplate reactiveStringRedisTemplate(
+            ReactiveRedisConnectionFactory factory) {
 
-        // key / hashKey: UTF‑8 문자열
-        tpl.setKeySerializer(StringRedisSerializer.UTF_8);
-        tpl.setHashKeySerializer(StringRedisSerializer.UTF_8);
-        // value / hashValue: JSON 직렬화
-        tpl.setValueSerializer(json);
-        tpl.setHashValueSerializer(json);
+        StringRedisSerializer keySer = new StringRedisSerializer();
+        StringRedisSerializer valSer = new StringRedisSerializer();
 
-        tpl.afterPropertiesSet();// 초기화
-        return tpl;
+        RedisSerializationContext<String, String> ctx = RedisSerializationContext
+                .<String, String>newSerializationContext(keySer)
+                .value(valSer)
+                .build();
+
+        return new ReactiveStringRedisTemplate(factory, ctx);
     }
 
-    /* 5. CacheManager – Cache별 TTL · null 값 캐싱 OFF */
+    // CacheManager – Cache별 TTL · null 값 캐싱 OFF
     @Bean
     CacheManager cacheManager(final GenericJackson2JsonRedisSerializer json) {
         // 기본 설정: Value 직렬화 + null 캐싱 off
@@ -128,13 +122,5 @@ public class RedisConfig {
                 .build();
     }
 
-    @Bean
-    RedisMessageListenerContainer container(final RedisConnectionFactory factory,
-                                            final RoleChangeSubscriber subscriber) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(factory);
-        container.addMessageListener(subscriber, new PatternTopic("acl.role.channel"));
-        return container;
-    }
 
 }

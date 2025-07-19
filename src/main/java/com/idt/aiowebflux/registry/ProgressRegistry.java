@@ -1,17 +1,11 @@
 package com.idt.aiowebflux.registry;
 
-import com.idt.aiowebflux.config.UploadProps;
 import com.idt.aiowebflux.emitter.ProgressEmitter;
 import com.idt.aiowebflux.session.UploadSession;
-import reactor.core.publisher.Sinks;
-
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ProgressRegistry {
-
-    public record Entry(UploadSession session, ProgressEmitter emitter) {}
 
     private final ConcurrentMap<String, Entry> map = new ConcurrentHashMap<>();
 
@@ -27,6 +21,9 @@ public class ProgressRegistry {
 
     public Entry remove(String uploadId) {
         return map.remove(uploadId);
+    }
+
+    public record Entry(UploadSession session, ProgressEmitter emitter) {
     }
 }
 /*

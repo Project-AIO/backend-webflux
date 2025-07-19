@@ -1,7 +1,6 @@
 package com.idt.aiowebflux.entity.constant.sort;
 
 import com.idt.aiowebflux.exception.DomainExceptionCode;
-
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -12,8 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 무조건 paging 조회에서 이걸 사용하는 게 아니라
- * 이걸 사용하는 조건은
+ * 무조건 paging 조회에서 이걸 사용하는 게 아니라 이걸 사용하는 조건은
  * <p>
  * 1. querydsl에서 paging을 사용할 때 !
  * <p>
@@ -21,10 +19,6 @@ import java.util.stream.Collectors;
  */
 public sealed interface SortProperty
         permits ProjectAccountProperty, ConversationProperty, DocumentProperty /* , AnotherProperty */ {
-
-    String key();
-
-    String path();
 
     ConcurrentMap<Class<?>, Map<String, ? extends SortProperty>> CACHE =
             new ConcurrentHashMap<>();
@@ -42,7 +36,6 @@ public sealed interface SortProperty
         );
     }
 
-
     static <E extends Enum<E> & SortProperty>
     E of(Class<E> type, String rawKey) {
         if (rawKey == null) {
@@ -56,4 +49,8 @@ public sealed interface SortProperty
     String pathOf(Class<E> type, String rawKey) {
         return of(type, rawKey).path();
     }
+
+    String key();
+
+    String path();
 }

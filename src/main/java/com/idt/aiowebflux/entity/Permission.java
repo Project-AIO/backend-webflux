@@ -23,7 +23,7 @@ public class Permission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long permissionId;
 
-    @Column(name ="code", nullable = false, length = 64, unique = true)
+    @Column(name = "code", nullable = false, length = 64, unique = true)
     private String code;
 
     @Enumerated(EnumType.STRING)

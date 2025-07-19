@@ -1,8 +1,7 @@
 package com.idt.aiowebflux.entity.constant;
 
-import lombok.Getter;
-
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public enum PermissionMask {

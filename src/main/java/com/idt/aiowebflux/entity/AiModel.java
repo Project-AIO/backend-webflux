@@ -46,7 +46,7 @@ public class AiModel {
     @Column(name = "base_url")
     private String baseUrl;
 
-    public  AiModel(final String name, final String provider, final Feature feature, final Integer maxToken) {
+    public AiModel(final String name, final String provider, final Feature feature, final Integer maxToken) {
         this.name = name;
         this.provider = provider;
         this.feature = feature;

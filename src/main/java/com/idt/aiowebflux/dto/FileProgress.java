@@ -1,17 +1,15 @@
 package com.idt.aiowebflux.dto;
 
 import com.idt.aiowebflux.entity.constant.State;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
 public class FileProgress {
 
     private final String fileId;        // 서버 내부 파일 식별자 (UUID)
     private final String clientFileId;  // 프론트에서 보낸 UUID
     private final String filename;
-    private final long   totalBytes;
+    private final long totalBytes;
 
     private final AtomicLong receivedBytes = new AtomicLong(0L);
     private final AtomicReference<State> status = new AtomicReference<>(State.NEW);
@@ -26,14 +24,37 @@ public class FileProgress {
     }
 
     // --- getters
-    public String getFileId()       { return fileId; }
-    public String getClientFileId() { return clientFileId; }
-    public String getFilename()     { return filename; }
-    public long   getTotalBytes()   { return totalBytes; }
-    public long   getReceivedBytes(){ return receivedBytes.get(); }
-    public State  getStatus()       { return status.get(); }
-    public int    getLastChunkIndex(){ return lastChunkIndex; }
-    public String getErrorMessage() { return errorMessage; }
+    public String getFileId() {
+        return fileId;
+    }
+
+    public String getClientFileId() {
+        return clientFileId;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public long getTotalBytes() {
+        return totalBytes;
+    }
+
+    public long getReceivedBytes() {
+        return receivedBytes.get();
+    }
+
+    public State getStatus() {
+        return status.get();
+    }
+
+    public int getLastChunkIndex() {
+        return lastChunkIndex;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
     // --- progress update
     public long addReceived(long delta, int chunkIndex) {
@@ -49,7 +70,9 @@ public class FileProgress {
         return v;
     }
 
-    /** 서버 파일 시스템 scan 등으로 실제 바이트에 맞춰 강제 동기화. */
+    /**
+     * 서버 파일 시스템 scan 등으로 실제 바이트에 맞춰 강제 동기화.
+     */
     public void syncReceivedBytes(long actualBytes) {
         receivedBytes.set(actualBytes);
         if (actualBytes >= totalBytes) {

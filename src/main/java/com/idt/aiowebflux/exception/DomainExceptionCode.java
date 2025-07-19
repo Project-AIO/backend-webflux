@@ -1,9 +1,8 @@
 package com.idt.aiowebflux.exception;
 
+import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 @Getter
@@ -38,6 +37,7 @@ public enum DomainExceptionCode {
     //악성 파일
     FILE_VIRUS_DETECTED(FILE.code + 12, "파일에 바이러스가 감지되었습니다."),
     BULK_FILE_UPLOAD_NOT_COMPLETE(FILE.code + 13, "대량 파일 업로드가 완료되지 않았습니다."),
+    FILE_VALIDATION_FAILED(FILE.code + 14, "파일 유효성 검사에 실패했습니다. %s"),
 
     CONFIGURATION_KNOWLEDGE(3000, "정의되지 않은 에러입니다."),
     CONFIGURATION_KNOWLEDGE_NOT_FOUND(CONFIGURATION_KNOWLEDGE.code + 1, "설정 지식을 찾을 수 없습니다."),
@@ -110,6 +110,7 @@ public enum DomainExceptionCode {
     JWT_UNSUPPORTED(JWT.code + 5, "지원되지 않는 JWT 토큰입니다."),
     ILLEGAL_JWT_TOKEN(JWT.code + 6, "잘못된 JWT 토큰입니다."),
     JWT_NO_AUTHORIZATION_HEADER(JWT.code + 7, "Authorization 헤더가 없습니다."),
+    JWT_BLACKLISTED_ERROR(JWT.code + 8, "블랙리스트에 등록된 JWT 토큰입니다."),
 
     USER(12000, "정의되지 않은 에러입니다."),
     USER_NOT_FOUND(USER.code + 1, "사용자를 찾을 수 없습니다."),

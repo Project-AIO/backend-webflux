@@ -13,16 +13,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 
@@ -67,7 +66,8 @@ public class Document {
         this.state = State.PENDING;
     }
 
-    public Document(final Folder folder, final State state, final Integer progress, final AccessLevel accessLevel, final Account account) {
+    public Document(final Folder folder, final State state, final Integer progress, final AccessLevel accessLevel,
+                    final Account account) {
         this.folder = folder;
         this.state = state;
         this.progress = progress;

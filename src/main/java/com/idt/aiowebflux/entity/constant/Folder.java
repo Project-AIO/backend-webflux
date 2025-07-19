@@ -1,9 +1,8 @@
 package com.idt.aiowebflux.entity.constant;
 
+import java.io.File;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.io.File;
 
 @Deprecated
 @Getter

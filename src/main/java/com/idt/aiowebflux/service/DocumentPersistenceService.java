@@ -1,12 +1,11 @@
 package com.idt.aiowebflux.service;
 
 import com.idt.aiowebflux.dto.DocumentRevisionDto;
-import com.idt.aiowebflux.dto.FileProgress;
-import com.idt.aiowebflux.entity.Document;
-import com.idt.aiowebflux.entity.DocumentFile;
-import com.idt.aiowebflux.repository.DocumentFileRepository;
-import com.idt.aiowebflux.repository.DocumentRepository;
-import com.idt.aiowebflux.session.UploadSession;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
@@ -19,27 +18,18 @@ import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
 public class DocumentPersistenceService {
 
-    private final DocumentRepository documentRepository;
-    private final DocumentFileRepository documentFileRepository;
     private final DocumentFileService documentFileService;
 
     @Transactional
-    public Mono<Void> executePostProcess(Path filePath, String fileName, Long folderId, String accountId, AccessLevel accessLevel) {
+    public Mono<Void> executePostProcess(Path filePath, String fileName, Long folderId, String accountId,
+                                         AccessLevel accessLevel) {
         return Mono.fromCallable(() -> {
             persistUploadedSession(filePath, fileName, folderId, accountId, accessLevel);
             return (Void) null;
@@ -47,7 +37,8 @@ public class DocumentPersistenceService {
     }
 
 
-    public void persistUploadedSession(Path filePath, String fileName, Long folderId, String accountId, AccessLevel accessLevel) throws IOException {
+    public void persistUploadedSession(Path filePath, String fileName, Long folderId, String accountId,
+                                       AccessLevel accessLevel) throws IOException {
         final String extension = org.apache.commons.io.FilenameUtils.getExtension(fileName).toLowerCase();
         final Integer totalPage = extract(filePath, extension);
         final DocumentRevisionDto dto = documentFileService.saveDocumentData(
@@ -60,7 +51,7 @@ public class DocumentPersistenceService {
                 totalPage
         );
 
-        final String name = dto.docId()+"_"+fileName;
+        final String name = dto.docId() + "_" + fileName;
         Path path = filePath.resolveSibling(name);
         Files.move(filePath, path, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -116,7 +107,6 @@ public class DocumentPersistenceService {
         try (XMLSlideShow ppt = new XMLSlideShow(Files.newInputStream(path))) {
             return ppt.getSlides().size();
         }
-        // (PPT는 HSLFSlideShow, 구분 로직 필요)
     }
 
 }

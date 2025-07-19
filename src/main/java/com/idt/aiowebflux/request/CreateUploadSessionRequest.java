@@ -2,7 +2,6 @@ package com.idt.aiowebflux.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
 
 public record CreateUploadSessionRequest(
@@ -13,5 +12,6 @@ public record CreateUploadSessionRequest(
             @NotNull String clientFileId,
             @NotNull String filename,
             @Min(0) long size
-    ) {}
+    ) {
+    }
 }

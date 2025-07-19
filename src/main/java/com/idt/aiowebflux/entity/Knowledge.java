@@ -9,11 +9,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -41,15 +40,15 @@ public class Knowledge extends BaseEntity {
     @Column(name = "update_dt", updatable = false)
     private LocalDateTime updateDt;
 
-    @Override
-    protected void prePersistChild() {
-        this.updateDt = LocalDateTime.now();
-    }
-
     public Knowledge(final String name, final Account account, final String description) {
         this.name = name;
         this.account = account;
         this.description = description;
+    }
+
+    @Override
+    protected void prePersistChild() {
+        this.updateDt = LocalDateTime.now();
     }
 
 }

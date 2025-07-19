@@ -2,25 +2,15 @@ package com.idt.aiowebflux.repository;
 
 import com.idt.aiowebflux.dto.ParentNodeDto;
 import com.idt.aiowebflux.entity.Folder;
-import org.springframework.data.domain.Sort;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public interface FolderRepository extends JpaRepository<Folder, Long> {
-//    List<Folder> findAllByProjectProjectId(final Integer projectId, final Sort sort);
-//
-//    @Query("SELECT pf.projectFolderId FROM ProjectFolder pf WHERE pf.project.projectId = :projectId")
-//    List<Integer> findProjectFolderIdByProject_ProjectId(final @Param("projectId") Integer projectId);
 
-    //전체 조회 시 이름 오름차순
-    List<Folder> findAllBy(final Sort sort);
-
-    List<Folder> findByParent(final Folder folder, final Sort name);
 
     @Query(value = """
             WITH RECURSIVE path_cte AS (
@@ -47,9 +37,9 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
                       0 AS depth
                  FROM tb_folder
                 WHERE folder_id = :id
-            
+                        
               UNION ALL
-            
+                        
                -- 부모 쪽으로 한 단계씩 올라가며 depth + 1
                SELECT f.folder_id,
                       f.name,

@@ -2,15 +2,6 @@ package com.idt.aiowebflux.util;
 
 import com.idt.aiowebflux.exception.DomainExceptionCode;
 import com.idt.aiowebflux.exception.InvalidFileNameException;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +13,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Slf4j
@@ -29,7 +27,8 @@ import java.nio.file.StandardCopyOption;
 public class FileUtils {
     public static final String DOC_ROOT = File.separator + "aio";
     public static final String ROOT_PATH = System.getProperty("user.dir");
-    public static final Path TEMP_PATH = Paths.get(File.separator + "aio" + File.separator + "temp").toAbsolutePath().normalize();
+    public static final Path TEMP_PATH = Paths.get(File.separator + "aio" + File.separator + "temp").toAbsolutePath()
+            .normalize();
 
     public FileUtils() {
         // 임시 저장소는 고정 경로로 사용
@@ -157,12 +156,10 @@ public class FileUtils {
 
         return resource;
     }
-    
 
 
     public void saveFile(final MultipartFile file, final String filePath, final String fileName,
                          final String extension) {
-
 
         try {
             // 대상 경로 (폴더가 이미 존재한다고 가정)

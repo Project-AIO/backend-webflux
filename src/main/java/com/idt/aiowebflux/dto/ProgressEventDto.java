@@ -27,7 +27,8 @@ public record ProgressEventDto(
         );
     }
 
-    public static ProgressEventDto overall(String uploadId, long received, long total, double pct, State status, String error) {
+    public static ProgressEventDto overall(String uploadId, long received, long total, double pct, State status,
+                                           String error) {
         return new ProgressEventDto(
                 "overall",
                 uploadId,

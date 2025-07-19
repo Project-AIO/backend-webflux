@@ -1,6 +1,7 @@
 package com.idt.aiowebflux.repository;
 
-import com.idt.aiowebflux.dto.DocFileDto;
+import static jakarta.persistence.LockModeType.PESSIMISTIC_READ;
+
 import com.idt.aiowebflux.entity.DocumentFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -9,59 +10,40 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
-import static jakarta.persistence.LockModeType.PESSIMISTIC_READ;
-
 @Repository
 public interface DocumentFileRepository extends JpaRepository<DocumentFile, Long> {
-    void deleteByDocument_DocId(final String docId);
 
-    @Query("SELECT new com.idt.aiowebflux.dto.DocFileDto(df.path, concat(df.document.docId,'.',df.extension)) FROM DocumentFile df WHERE df.document.docId = :docId")
-    Optional<DocFileDto> findPathByDocument_DocId(@Param("docId") final String docId);
-
-    @Query("SELECT concat(df.path,:separator,df.document.docId,'.',df.extension) FROM DocumentFile df WHERE df.document.docId = :docId")
-    Optional<String> findDocumentFullPathById(@Param("docId") final String docId,
-                                              @Param("separator") final String separator);
-
-    Optional<DocumentFile> findDocumentFileByDocument_DocId(final String docId);
-
-    /**
-     * 동일 file_name 에 대해 revision(1.0 → 1.1 …)을 자동 증가시켜 INSERT.
-     *
-     * @return 1  성공  /  0  실패(잘못된 docId 등)
-     */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
-        INSERT INTO tb_doc_file
-                (doc_id, extension, path, file_name,
-                 total_page, file_size, revision)
-        SELECT  :docId,
-                :extension,
-                :path,
-                :fileName,
-                :totalPage,
-                :fileSize,
-                /* ---------- 핵심 ---------- */
-                IFNULL(
-                    ROUND(         -- ① 소수 첫째 자리에서 반올림
-                        (SELECT MAX(df.revision)
-                           FROM tb_doc_file df
-                          WHERE df.file_name = :fileName
-                          FOR UPDATE
-                        ) + 0.1,
-                        1           -- ← 소수 1자리
-                    ),
-                    1.0             -- ② 처음 들어올 땐 1.0
-                ) AS next_revision;
-        """,
+            INSERT INTO tb_doc_file
+                    (doc_id, extension, path, file_name,
+                     total_page, file_size, revision)
+            SELECT  :docId,
+                    :extension,
+                    :path,
+                    :fileName,
+                    :totalPage,
+                    :fileSize,
+                    /* ---------- 핵심 ---------- */
+                    IFNULL(
+                        ROUND(         -- ① 소수 첫째 자리에서 반올림
+                            (SELECT MAX(df.revision)
+                               FROM tb_doc_file df
+                              WHERE df.file_name = :fileName
+                              FOR UPDATE
+                            ) + 0.1,
+                            1           -- ← 소수 1자리
+                        ),
+                        1.0             -- ② 처음 들어올 땐 1.0
+                    ) AS next_revision;
+            """,
             nativeQuery = true)
-    int insertWithAutoRevision(@Param("docId")      final String docId,      // FK
-                               @Param("extension")  final String extension,
-                               @Param("path")       final String path,
-                               @Param("fileName")   final String fileName,
-                               @Param("totalPage")  final Integer totalPage,
-                               @Param("fileSize")   final Long fileSize);
+    int insertWithAutoRevision(@Param("docId") final String docId,      // FK
+                               @Param("extension") final String extension,
+                               @Param("path") final String path,
+                               @Param("fileName") final String fileName,
+                               @Param("totalPage") final Integer totalPage,
+                               @Param("fileSize") final Long fileSize);
 
     @Lock(PESSIMISTIC_READ)
     @Query("""
