@@ -1,6 +1,7 @@
 package com.idt.aiowebflux.service;
 
 import com.idt.aiowebflux.dto.FileProgress;
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.entity.constant.State;
 import com.idt.aiowebflux.exception.DomainExceptionCode;
 import com.idt.aiowebflux.registry.ProgressRegistry;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import xyz.capybara.clamav.CommunicationException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class ChunkUploadService {
             final long offset,
             final boolean finalChunk,
             final int chunkIndex,
-            final AccessLevel accessLevel,
+            final AccessModifier accessModifier,
             Flux<DataBuffer> requestBody) {
         final UploadSession session = requireSession(uploadId);
         //UploadEssionController에서 session을 생성할 때, uploadId와 serverFileId를 저장해 뒀는데
@@ -86,7 +88,7 @@ public class ChunkUploadService {
                                                                                 session.getFolderId(),
                                                                                 // 세션에 저장해 둔 값
                                                                                 accountId,         // ex) "admin"
-                                                                                accessLevel    // enum AccessLevel
+                                                                                accessModifier    // enum AccessLevel
                                                                         )
                                                                 )
                                                 )
@@ -114,6 +116,15 @@ public class ChunkUploadService {
                                             fp.getTotalBytes(),
                                             fp.isComplete()
                                     ));
+                        })
+                        .doOnError(e -> {
+                            log.error("Error writing chunk for uploadId: {}, serverFileId: {}, offset: {}",
+                                    uploadId, serverFileId, offset, e);
+                            session.setStatus(State.FAILED);
+                            progressService.emitOverall(session);
+                            if (!(e.getCause() instanceof CommunicationException)) {
+                                progressService.failAndClose(session,e);
+                            }
                         })
                         .doFinally(sig -> DataBufferUtils.release(buf)) // DataBuffer release
         );

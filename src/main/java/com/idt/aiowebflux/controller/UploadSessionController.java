@@ -46,7 +46,7 @@ public class UploadSessionController {
         // 벌크 업로드 세션에 대한 ID 생성
         final String uploadId = UUID.randomUUID().toString();
 
-        UploadSession session = new UploadSession(uploadId, req.folderId(), State.NEW);
+        UploadSession session = new UploadSession(uploadId, req.folderId(), State.NEW, req.accessModifier());
 
         // 요청 파일 목록 → RegisteredFile 목록 생성
         final List<CreateUploadSessionResponse.RegisteredFile> registered =
@@ -57,12 +57,16 @@ public class UploadSessionController {
                             // 세션에 파일 등록
                             session.addFile(new FileProgress(
                                     serverFileId,
+                                    req.folderId(),
                                     fm.clientFileId(),
                                     fm.filename(),
-                                    fm.size()
+                                    fm.size(),
+                                    req.accessModifier()
                             ));
                             return new CreateUploadSessionResponse.RegisteredFile(
                                     fm.clientFileId(),
+                                    req.folderId(),
+                                    req.accessModifier(),
                                     serverFileId,
                                     fm.filename(),
                                     fm.size()

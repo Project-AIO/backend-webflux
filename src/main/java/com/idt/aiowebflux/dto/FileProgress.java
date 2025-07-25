@@ -1,5 +1,6 @@
 package com.idt.aiowebflux.dto;
 
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.entity.constant.State;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -10,17 +11,21 @@ public class FileProgress {
     private final String clientFileId;  // 프론트에서 보낸 UUID
     private final String filename;
     private final long totalBytes;
+    private final Long folderId;
+    private final AccessModifier accessModifier;
 
     private final AtomicLong receivedBytes = new AtomicLong(0L);
     private final AtomicReference<State> status = new AtomicReference<>(State.NEW);
     private volatile int lastChunkIndex = -1;
     private volatile String errorMessage;
 
-    public FileProgress(String fileId, String clientFileId, String filename, long totalBytes) {
+    public FileProgress(final String fileId, final Long folderId,  final String clientFileId, final String filename, final long totalBytes, final AccessModifier accessModifier) {
         this.fileId = fileId;
+        this.folderId = folderId;
         this.clientFileId = clientFileId;
         this.filename = filename;
         this.totalBytes = totalBytes;
+        this.accessModifier = accessModifier;
     }
 
     // --- getters
@@ -47,6 +52,9 @@ public class FileProgress {
     public State getStatus() {
         return status.get();
     }
+    public Long getFolderId() {
+        return folderId;
+    }
 
     public int getLastChunkIndex() {
         return lastChunkIndex;
@@ -54,6 +62,9 @@ public class FileProgress {
 
     public String getErrorMessage() {
         return errorMessage;
+    }
+    public AccessModifier getAccessModifier() {
+        return accessModifier;
     }
 
     // --- progress update

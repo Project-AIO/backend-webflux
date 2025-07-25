@@ -1,6 +1,7 @@
 package com.idt.aiowebflux.entity;
 
 
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.entity.constant.State;
 import com.idt.aiowebflux.entity.generator.Sha256IdGenerator;
 import jakarta.persistence.Column;
@@ -52,7 +53,7 @@ public class Document {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "access_modifier")
-    private AccessLevel accessModifier;
+    private AccessModifier accessModifier;
 
     @Column(name = "upload_dt")
     private LocalDateTime uploadDt;
@@ -66,7 +67,7 @@ public class Document {
         this.state = State.PENDING;
     }
 
-    public Document(final Folder folder, final State state, final Integer progress, final AccessLevel accessLevel,
+    public Document(final Folder folder, final State state, final Integer progress, final AccessModifier accessLevel,
                     final Account account) {
         this.folder = folder;
         this.state = state;

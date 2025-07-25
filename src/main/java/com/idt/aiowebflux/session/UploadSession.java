@@ -1,6 +1,7 @@
 package com.idt.aiowebflux.session;
 
 import com.idt.aiowebflux.dto.FileProgress;
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.entity.constant.State;
 import java.time.Instant;
 import java.util.Collection;
@@ -11,20 +12,23 @@ public class UploadSession {
 
     private final String uploadId;   // 서버 생성 UUID
     private final Long folderId;   // 사용자가 선택한 폴더 (nullable)
+    private final AccessModifier accessModifier;
     private final Instant createdAt = Instant.now();
     // serverFileId -> FileProgress
     private final Map<String, FileProgress> files = new ConcurrentHashMap<>();
     private volatile State status = State.NEW;
 
-    public UploadSession(String uploadId, Long folderId) {
+    public UploadSession(final String uploadId, final Long folderId, final AccessModifier accessModifier) {
         this.uploadId = uploadId;
         this.folderId = folderId;
+        this.accessModifier = accessModifier;
     }
 
-    public UploadSession(String uploadId, Long folderId, State status) {
+    public UploadSession(final String uploadId, final Long folderId, final State status, final AccessModifier accessModifier) {
         this.uploadId = uploadId;
         this.folderId = folderId;
         this.status = status;
+        this.accessModifier = accessModifier;
     }
 
     public String getUploadId() {
@@ -37,6 +41,9 @@ public class UploadSession {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+    public AccessModifier getAccessModifier() {
+        return accessModifier;
     }
 
     public State getStatus() {

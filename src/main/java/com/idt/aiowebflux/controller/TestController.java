@@ -101,6 +101,7 @@ public class TestController {
                         .queryParam("access_level", AccessLevel.PUBLIC) // 도메인 enum
                         .build(uploadId, serverFileId))
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImp0aSI6Ijc4OGExNWVkLTVjNTEtNDdlNC04NTM0LTA0MTgxODQ4ZjFkNCIsImFjY291bnRfaWQiOiJhZG1pbiIsImlzcyI6IkFJTyIsInJvbGVzIjpbIkFETUlOIl0sImV4cCI6MTgxMzA1NDY5M30.1I_3zoH-UDTnVkVgIa6TwEsIXXbeNG8azh8231o9PH55Z_ZcISW1juI6l2YpeS0rqjRTnc1wYC0Gbfnm6xsrmA")
                 .bodyValue(spec.part()) // 작은 테스트라 byte[] 사용
                 .retrieve()
                 .bodyToMono(ChunkUploadResponse.class);

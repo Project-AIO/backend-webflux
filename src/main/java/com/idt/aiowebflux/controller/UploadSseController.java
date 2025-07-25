@@ -1,6 +1,7 @@
 package com.idt.aiowebflux.controller;
 
 import com.idt.aiowebflux.dto.ProgressEventDto;
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.entity.constant.State;
 import com.idt.aiowebflux.registry.ProgressRegistry;
 import com.idt.aiowebflux.service.ProgressService;
@@ -10,6 +11,7 @@ import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
@@ -31,13 +33,15 @@ public class UploadSseController {
                UploadSessionController에서 벌크 업로드 API에서 받은 response의 upload_id를 이용하여
                구독을 신청
             """)
-    @GetMapping(path = "/{upload_id}/progress", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<ProgressEventDto>> stream(@PathVariable("upload_id") final String uploadId) {
+    @GetMapping(path = "/{upload_id}/folders/{folder_id}/progress", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<ProgressEventDto>> stream(@PathVariable("upload_id") final String uploadId,
+                                                          @PathVariable("folder_id") final Long folderId,
+                                                          @RequestParam("access_modifier") final AccessModifier accessModifier) {
         final ProgressRegistry.Entry e = registry.get(uploadId);
         if (e == null) {
             return Flux.just(ServerSentEvent.<ProgressEventDto>builder()
                     .event("error")
-                    .data(new ProgressEventDto(uploadId, null, null, null, 0, -1, 0.0,State.FAILED, "uploadId not found"))
+                    .data(new ProgressEventDto(uploadId, null, folderId, accessModifier,null, null, 0, -1, 0.0,State.FAILED, "uploadId not found"))
                     .build());
         }
 

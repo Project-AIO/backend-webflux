@@ -40,6 +40,8 @@ public class ProgressService {
         if (e != null) {
             e.emitter().emit(ProgressEventDto.overall(
                     session.getUploadId(),
+                    session.getFolderId(),
+                    session.getAccessModifier(),
                     session.receivedBytes(),
                     session.totalBytes(),
                     session.percent(),

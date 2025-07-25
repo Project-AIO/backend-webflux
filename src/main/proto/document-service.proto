@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.idt.aio.grpc";
+option java_outer_classname = "DocumentProto";
+
+service DocumentService {
+  rpc DeleteDocuments (DeleteDocumentsRequest) returns (DeleteDocumentsResponse);
+  rpc UpdateDocumentName (UpdateDocumentNameRequest) returns (UpdateDocumentNameResponse);
+}
+
+message DeleteDocumentsRequest {
+  repeated string paths = 1;     // 삭제할 경로
+}
+
+message DeleteDocumentsResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateDocumentNameRequest {
+  string id = 1;               // 문서 ID
+  string path = 2;               // 문서 경로
+  string new_name = 3;           // 새 문서 이름
+}
+
+message UpdateDocumentNameResponse {
+  bool success = 1;
+  string message = 2;
+}

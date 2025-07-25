@@ -145,3 +145,7 @@ doc:
 clamav:
   host: localhost
   port: 3310
+grpc:
+  server:
+    port: 9090
+    compression: gzip

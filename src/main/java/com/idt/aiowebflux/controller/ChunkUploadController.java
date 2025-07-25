@@ -2,6 +2,7 @@ package com.idt.aiowebflux.controller;
 
 import com.idt.aiowebflux.annotation.JwtContext;
 import com.idt.aiowebflux.dto.JwtPrincipal;
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.response.ChunkUploadResponse;
 import com.idt.aiowebflux.service.ChunkUploadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,17 +43,17 @@ public class ChunkUploadController {
      * offset	이번 청크가 파일 전체 바이트 중 어디서부터 시작하는지를 0‑based 정수(byte)로 표현한 값
      */
     @PutMapping(
-            path = "uploads/sessions/{uploadId}/files/{serverFileId}/chunk",
+            path = "uploads/sessions/{upload_id}/files/{server_file_id}/chunk",
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE
     )
     public Mono<ChunkUploadResponse> uploadChunk(ServerHttpRequest request,
                                                  @JwtContext final JwtPrincipal jwtPrincipal,
-                                                 @PathVariable final String uploadId,
-                                                 @PathVariable final String serverFileId,
+                                                 @PathVariable("upload_id") final String uploadId,
+                                                 @PathVariable("server_file_id") final String serverFileId,
                                                  @RequestParam("offset") final long offset,
                                                  @RequestParam(name = "chunk_index", defaultValue = "-1") final int chunkIndex,
                                                  @RequestParam(name = "final", defaultValue = "false") final boolean finalChunk,
-                                                 @RequestParam(name = "access_level") final AccessLevel accessLevel) {
+                                                 @RequestParam(name = "access_modifier") final AccessModifier accessModifier) {
 
         return chunkUploadService.executeChunkUpload(
                 jwtPrincipal.accountId(),
@@ -61,7 +62,7 @@ public class ChunkUploadController {
                 offset,
                 finalChunk,
                 chunkIndex,
-                accessLevel,
+                accessModifier,
                 request.getBody()
         );
     }

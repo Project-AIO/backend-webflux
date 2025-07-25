@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
@@ -27,18 +29,19 @@ public class DocumentPersistenceService {
 
     private final DocumentFileService documentFileService;
 
+
     @Transactional
     public Mono<Void> executePostProcess(Path filePath, String fileName, Long folderId, String accountId,
-                                         AccessLevel accessLevel) {
+                                         AccessModifier accessModifier) {
         return Mono.fromCallable(() -> {
-            persistUploadedSession(filePath, fileName, folderId, accountId, accessLevel);
+            persistUploadedSession(filePath, fileName, folderId, accountId, accessModifier);
             return (Void) null;
         }).subscribeOn(Schedulers.boundedElastic());
     }
 
 
     public void persistUploadedSession(Path filePath, String fileName, Long folderId, String accountId,
-                                       AccessLevel accessLevel) throws IOException {
+                                       AccessModifier accessModifier) throws IOException {
         final String extension = org.apache.commons.io.FilenameUtils.getExtension(fileName).toLowerCase();
         final Integer totalPage = extract(filePath, extension);
         final DocumentRevisionDto dto = documentFileService.saveDocumentData(
@@ -46,7 +49,7 @@ public class DocumentPersistenceService {
                 extension,
                 folderId,
                 accountId,
-                accessLevel,
+                accessModifier,
                 Files.size(filePath),
                 totalPage
         );

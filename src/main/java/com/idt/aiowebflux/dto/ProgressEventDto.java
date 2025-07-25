@@ -1,10 +1,13 @@
 package com.idt.aiowebflux.dto;
 
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.entity.constant.State;
 
 public record ProgressEventDto(
         String type,          // \"file\" | \"overall\"
         String uploadId,
+        Long folderId,
+        AccessModifier accessModifier,
         String fileId,        // file 이벤트일 때만
         String filename,      // 선택
         long receivedBytes,
@@ -17,6 +20,8 @@ public record ProgressEventDto(
         return new ProgressEventDto(
                 "file",
                 uploadId,
+                fp.getFolderId(),
+                fp.getAccessModifier(),
                 fp.getFileId(),
                 fp.getFilename(),
                 fp.getReceivedBytes(),
@@ -27,11 +32,13 @@ public record ProgressEventDto(
         );
     }
 
-    public static ProgressEventDto overall(String uploadId, long received, long total, double pct, State status,
-                                           String error) {
+    public static ProgressEventDto overall(final String uploadId, final Long folderId, final AccessModifier accessModifier, final long received, final long total, final double pct, final State status,
+                                           final String error) {
         return new ProgressEventDto(
                 "overall",
                 uploadId,
+                folderId,
+                accessModifier,
                 null,
                 null,
                 received,

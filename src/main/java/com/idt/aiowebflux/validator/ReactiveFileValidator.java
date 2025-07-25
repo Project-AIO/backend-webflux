@@ -17,6 +17,7 @@ import org.springframework.util.unit.DataSize;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import xyz.capybara.clamav.ClamavClient;
+import xyz.capybara.clamav.CommunicationException;
 import xyz.capybara.clamav.commands.scan.result.ScanResult;
 
 @Slf4j
@@ -56,8 +57,6 @@ public class ReactiveFileValidator {
                         Files.deleteIfExists(filePath);
                         resumableFileStorageService.deleteTempFolder(uploadId);
                         log.warn("검증 실패로 파일 삭제: {}", filePath);
-                        throw DomainExceptionCode.FILE_VALIDATION_FAILED.newInstance(
-                                "파일 검증 실패: " + e.getMessage(), e);
                     } catch (IOException io) {
                         log.error("검증 실패 후 파일 삭제 실패: {}", io.getMessage());
                         throw new RuntimeException("파일 검증 실패: " + e.getMessage(), e);

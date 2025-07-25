@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DocumentFileRepository extends JpaRepository<DocumentFile, Long> {
 
+
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
             INSERT INTO tb_doc_file

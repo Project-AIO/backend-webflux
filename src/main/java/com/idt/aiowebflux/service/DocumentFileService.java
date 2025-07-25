@@ -2,6 +2,7 @@ package com.idt.aiowebflux.service;
 
 import com.idt.aiowebflux.dto.DocumentRevisionDto;
 import com.idt.aiowebflux.entity.Document;
+import com.idt.aiowebflux.entity.constant.AccessModifier;
 import com.idt.aiowebflux.repository.DocumentFileRepository;
 import com.idt.aiowebflux.util.FileUtils;
 import java.io.File;
@@ -24,14 +25,14 @@ public class DocumentFileService {
             final String extension,
             final Long folderId,
             final String accountId,
-            final AccessLevel accessLevel,
+            final AccessModifier accessModifier,
             final long fileBytesLong,
             final Integer totalPage
     ) {
 
-        final Document document = documentService.createDocument(folderId, accountId, accessLevel);
+        final Document document = documentService.createDocument(folderId, accountId, accessModifier);
         final String absoluteFilePath = Paths.get(FileUtils.ROOT_PATH + File.separator + FileUtils.DOC_ROOT,
-                document.getDocId() + "." + extension).toString();
+                document.getDocId()+"_"+ originalName).toString();
 
         /**
          * 동시성 문제를 방지하기 위해서 native 쿼리로 작성
