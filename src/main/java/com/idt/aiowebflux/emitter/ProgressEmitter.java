@@ -7,7 +7,7 @@ import reactor.core.publisher.Sinks;
 public class ProgressEmitter {
 
     private final Sinks.Many<ProgressEventDto> sink =
-            Sinks.many().multicast().onBackpressureBuffer();
+            Sinks.many().replay().limit(3);
 
     public void emit(ProgressEventDto ev) {
         sink.tryEmitNext(ev);

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 public enum DomainExceptionCode {
     FOLDER(1000, "정의되지 않은 에러입니다."),
     FOLDER_NOT_FOUND(FOLDER.code + 1, "프로젝트 폴더를 찾을 수 없습니다."),
+    FOLDER_DELETE_FAILED(FOLDER.code + 2, "폴더 삭제에 실패했습니다. 지식 아카이브에 사용되고 있는 문서가 존재합니다. %s \n"),
+    FOLDER_ALREADY_EXISTS(FOLDER.code + 3, "이미 존재하는 폴더명입니다."),
 
 
     KNOWLEDGE(1500, "정의되지 않은 에러입니다."),
@@ -38,6 +40,8 @@ public enum DomainExceptionCode {
     FILE_VIRUS_DETECTED(FILE.code + 12, "파일에 바이러스가 감지되었습니다."),
     BULK_FILE_UPLOAD_NOT_COMPLETE(FILE.code + 13, "대량 파일 업로드가 완료되지 않았습니다."),
     FILE_VALIDATION_FAILED(FILE.code + 14, "파일 유효성 검사에 실패했습니다. %s"),
+    FILE_SIZE_MISMATCH(FILE.code + 15, "파일의 신고 크기와 실제 크기가 일치하지 않습니다. 신고 크기: %d, 실제 크기: %d"),
+    DOCUMENT_DELETE_FAILED(FILE.code + 16, "문서 삭제에 실패했습니다."),
 
     CONFIGURATION_KNOWLEDGE(3000, "정의되지 않은 에러입니다."),
     CONFIGURATION_KNOWLEDGE_NOT_FOUND(CONFIGURATION_KNOWLEDGE.code + 1, "설정 지식을 찾을 수 없습니다."),

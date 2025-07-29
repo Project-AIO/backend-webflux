@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import com.idt.aiowebflux.entity.constant.AccessModifier;
+import com.idt.aiowebflux.validator.ReactiveFileValidator;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
@@ -28,19 +29,22 @@ import reactor.core.scheduler.Schedulers;
 public class DocumentPersistenceService {
 
     private final DocumentFileService documentFileService;
+    private final ReactiveFileValidator reactiveFileValidator;
 
 
     @Transactional
     public Mono<Void> executePostProcess(Path filePath, String fileName, Long folderId, String accountId,
-                                         AccessModifier accessModifier) {
-        return Mono.fromCallable(() -> {
-            persistUploadedSession(filePath, fileName, folderId, accountId, accessModifier);
-            return (Void) null;
-        }).subscribeOn(Schedulers.boundedElastic());
+                                         AccessModifier accessModifier, String uploadId, Long totalBytes) {
+        return Mono.fromCallable(() -> persistUploadedSession(filePath, fileName, folderId, accountId, accessModifier))
+                .subscribeOn(Schedulers.boundedElastic())
+                .delayUntil(path ->
+                reactiveFileValidator.validate(fileName, totalBytes, uploadId, path)
+                )
+                .then();
     }
 
 
-    public void persistUploadedSession(Path filePath, String fileName, Long folderId, String accountId,
+    public Path persistUploadedSession(Path filePath, String fileName, Long folderId, String accountId,
                                        AccessModifier accessModifier) throws IOException {
         final String extension = org.apache.commons.io.FilenameUtils.getExtension(fileName).toLowerCase();
         final Integer totalPage = extract(filePath, extension);
@@ -57,6 +61,8 @@ public class DocumentPersistenceService {
         final String name = dto.docId() + "_" + fileName;
         Path path = filePath.resolveSibling(name);
         Files.move(filePath, path, StandardCopyOption.REPLACE_EXISTING);
+
+        return path;
     }
 
     public Integer extract(Path path, String ext) {

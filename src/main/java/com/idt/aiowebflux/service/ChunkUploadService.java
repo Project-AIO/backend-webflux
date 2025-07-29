@@ -77,19 +77,15 @@ public class ChunkUploadService {
                                 finalizeFileMono =
                                         storage.finalizeFile(uploadId, serverFileId, fp.getFilename())
                                                 .flatMap(path ->
-
-                                                        reactiveFileValidator.validate(path, fp.getFilename(),
-                                                                        fp.getTotalBytes(), uploadId)
-                                                                .then(
-                                                                        // 후처리 (DB 기록·썸네일 등)
-                                                                        documentPersistenceService.executePostProcess(
-                                                                                path,
-                                                                                fp.getFilename(),
-                                                                                session.getFolderId(),
-                                                                                // 세션에 저장해 둔 값
-                                                                                accountId,         // ex) "admin"
-                                                                                accessModifier    // enum AccessLevel
-                                                                        )
+                                                                documentPersistenceService.executePostProcess(
+                                                                        path,
+                                                                        fp.getFilename(),
+                                                                        session.getFolderId(),
+                                                                        // 세션에 저장해 둔 값
+                                                                        accountId,
+                                                                        accessModifier,
+                                                                        uploadId,
+                                                                        fp.getTotalBytes()
                                                                 )
                                                 )
                                                 .doOnSuccess(v -> {
@@ -118,13 +114,12 @@ public class ChunkUploadService {
                                     ));
                         })
                         .doOnError(e -> {
+
                             log.error("Error writing chunk for uploadId: {}, serverFileId: {}, offset: {}",
                                     uploadId, serverFileId, offset, e);
                             session.setStatus(State.FAILED);
                             progressService.emitOverall(session);
-                            if (!(e.getCause() instanceof CommunicationException)) {
-                                progressService.failAndClose(session,e);
-                            }
+
                         })
                         .doFinally(sig -> DataBufferUtils.release(buf)) // DataBuffer release
         );
@@ -133,7 +128,7 @@ public class ChunkUploadService {
     private UploadSession requireSession(String uploadId) {
         ProgressRegistry.Entry e = registry.get(uploadId);
         if (e == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "uploadId not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "uploadId not found -> "+ uploadId);
         }
         return e.session();
     }
@@ -141,7 +136,7 @@ public class ChunkUploadService {
     private FileProgress requireFile(UploadSession s, String serverFileId) {
         FileProgress fp = s.getFile(serverFileId);
         if (fp == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "server_file_id에 해당하는 파일을 찾지 못했습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "server_file_id에 해당하는 파일을 찾지 못했습니다. -> " + serverFileId);
         }
         return fp;
     }

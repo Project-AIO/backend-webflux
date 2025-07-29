@@ -46,17 +46,24 @@ public class ReactiveFileValidator {
     /**
      * 저장된 파일(Path) 기준 딥 검증. - declaredSize: 클라이언트/메타가 신고한 크기 (로그/경고용) - 실제 크기: Files.size(filePath) 로 재확인
      */
-    public Mono<Void> validate(Path filePath, String filename, long declaredSize, String uploadId) {
+    public Mono<Void> validate(String filename, long declaredSize, String uploadId, Path path) {
         return Mono.fromCallable(() -> {
-                    doValidateBlocking(filePath, filename, declaredSize);
+                    doValidateBlocking(filename, declaredSize, path);
                     return true;
                 })
                 .subscribeOn(Schedulers.boundedElastic())
                 .doOnError(e -> {
                     try {
-                        Files.deleteIfExists(filePath);
+                        /**
+                         * 업로드 중 사용자가 브라우저를 껐을 때는 바로 리턴
+                         */
+                        if(e.getCause() instanceof CommunicationException) {
+                            log.error("ClamAV 통신 오류: {}", e.getMessage());
+                            return;
+                        }
+                        Files.deleteIfExists(path);
                         resumableFileStorageService.deleteTempFolder(uploadId);
-                        log.warn("검증 실패로 파일 삭제: {}", filePath);
+                        log.warn("검증 실패로 파일 삭제: {}", path);
                     } catch (IOException io) {
                         log.error("검증 실패 후 파일 삭제 실패: {}", io.getMessage());
                         throw new RuntimeException("파일 검증 실패: " + e.getMessage(), e);
@@ -66,7 +73,7 @@ public class ReactiveFileValidator {
 
     }
 
-    private void doValidateBlocking(Path filePath, String filename, long declaredSize) {
+    private void doValidateBlocking(String filename, long declaredSize, Path path) {
         if (filename == null || filename.isBlank()) {
             throw DomainExceptionCode.FILE_NAME_IS_NULL.newInstance("파일 이름이 비어 있음");
         }
@@ -74,7 +81,7 @@ public class ReactiveFileValidator {
         // 실제 크기 확인
         long actualSize;
         try {
-            actualSize = Files.size(filePath);
+            actualSize = Files.size(path);
         } catch (IOException e) {
             throw DomainExceptionCode.FILE_READ_FAILED.newInstance(filename + ": 파일 크기 확인 실패: " + e.getMessage());
         }
@@ -87,7 +94,8 @@ public class ReactiveFileValidator {
 
         // 신고 크기와 차이 로그
         if (declaredSize > 0 && declaredSize != actualSize) {
-
+            throw DomainExceptionCode.FILE_SIZE_MISMATCH.newInstance(
+                    filename + " 신고 크기(" + declaredSize + "B)와 실제 크기(" + actualSize + "B) 불일치");
         }
 
         // 확장자 화이트리스트
@@ -99,7 +107,7 @@ public class ReactiveFileValidator {
         // MIME 감지 (Tika) - Path 기반 감지 권장
         String detected;
         try {
-            detected = tika.detect(filePath); // 스트림 열지 않아도 됨 (헤더 검사 + 일부 sniff)
+            detected = tika.detect(path); // 스트림 열지 않아도 됨 (헤더 검사 + 일부 sniff)
         } catch (Exception e) {
             throw DomainExceptionCode.FILE_CONTENT_TYPE_INVALID.newInstance(
                     filename + " MIME 감지 실패: " + e.getMessage());
@@ -114,7 +122,7 @@ public class ReactiveFileValidator {
         }
 
         // ClamAV 바이러스 스캔
-        try (InputStream is = Files.newInputStream(filePath)) {
+        try (InputStream is = Files.newInputStream(path)) {
             ScanResult result = clam.scan(is);
             if (result instanceof ScanResult.VirusFound vf) {
                 throw DomainExceptionCode.FILE_VIRUS_DETECTED.newInstance(
