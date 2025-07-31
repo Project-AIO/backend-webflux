@@ -16,9 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.unit.DataSize;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import xyz.capybara.clamav.ClamavClient;
-import xyz.capybara.clamav.CommunicationException;
-import xyz.capybara.clamav.commands.scan.result.ScanResult;
 
 @Slf4j
 @Component
@@ -29,16 +26,13 @@ public class ReactiveFileValidator {
     private final ResumableFileStorageService resumableFileStorageService;
     private DataSize maxBytes;
     private final Tika tika = new Tika();
-    private final ClamavClient clam;
 
     public ReactiveFileValidator(
-            ClamavClient clam,
             @Value("${spring.servlet.multipart.max-file-size}") final DataSize maxSize,
             ResumableFileStorageService resumableFileStorageService
     ) {
         this.allowedExt = Extension.getExtensions();
         this.allowedTypes = Extension.getTypes();
-        this.clam = clam;
         this.maxBytes = maxSize;
         this.resumableFileStorageService = resumableFileStorageService;
     }
@@ -54,13 +48,6 @@ public class ReactiveFileValidator {
                 .subscribeOn(Schedulers.boundedElastic())
                 .doOnError(e -> {
                     try {
-                        /**
-                         * 업로드 중 사용자가 브라우저를 껐을 때는 바로 리턴
-                         */
-                        if(e.getCause() instanceof CommunicationException) {
-                            log.error("ClamAV 통신 오류: {}", e.getMessage());
-                            return;
-                        }
                         Files.deleteIfExists(path);
                         resumableFileStorageService.deleteTempFolder(uploadId);
                         log.warn("검증 실패로 파일 삭제: {}", path);
@@ -119,18 +106,6 @@ public class ReactiveFileValidator {
         // ZIP 등 차단
         if ("application/zip".equals(detected)) {
             throw DomainExceptionCode.ZIP_FILE_NOT_SUPPORTED.newInstance(filename + " ZIP 업로드 불가");
-        }
-
-        // ClamAV 바이러스 스캔
-        try (InputStream is = Files.newInputStream(path)) {
-            ScanResult result = clam.scan(is);
-            if (result instanceof ScanResult.VirusFound vf) {
-                throw DomainExceptionCode.FILE_VIRUS_DETECTED.newInstance(
-                        filename + " 바이러스 감지: " + vf.getFoundViruses().keySet());
-            }
-        } catch (IOException io) {
-            throw DomainExceptionCode.FILE_READ_FAILED.newInstance(
-                    filename + " 바이러스 스캔 중 파일 읽기 실패: " + io.getMessage());
         }
     }
 }

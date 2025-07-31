@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import xyz.capybara.clamav.CommunicationException;
+
 
 @Slf4j
 @RequiredArgsConstructor
