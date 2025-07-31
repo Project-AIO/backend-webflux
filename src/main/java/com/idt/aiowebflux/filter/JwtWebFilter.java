@@ -33,7 +33,7 @@ public class JwtWebFilter implements WebFilter {
         return tokenRepo.isBlackListed(token)
                 .flatMap(blackListed ->
                         blackListed
-                                ? Mono.error(DomainExceptionCode.JWT_BLACKLISTED_ERROR.newInstance())
+                                ? Mono.error(DomainExceptionCode.JWT_BLACKLISTED.newInstance())
                                 : chain.filter(exchange));
     }
 }
