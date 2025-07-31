@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtIssuerReactiveAuthenticationManagerResolver;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler;
@@ -27,7 +26,6 @@ public class SecurityConfig {
     private final ServerAuthenticationEntryPoint entryPoint;         // 401
     private final ServerAccessDeniedHandler accessDeniedHandler;     // 403
     private final ExceptionBridgeWebFilter exceptionBridgeWebFilter; // ControllerAdvice 위임
-    private final JwtIssuerReactiveAuthenticationManagerResolver amResolver;
 
 
     @Bean
@@ -47,7 +45,6 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.POST, "/api/v1/signup", "/api/v1/signin").permitAll()
                         .pathMatchers("/api/v1/login/sso", "/error").permitAll()
                         .anyExchange().authenticated())
-                .oauth2ResourceServer(o2 -> o2.authenticationManagerResolver(amResolver))
                 .build();
     }
 
