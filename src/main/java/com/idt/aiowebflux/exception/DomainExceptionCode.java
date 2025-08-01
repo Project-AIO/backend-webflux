@@ -119,7 +119,7 @@ public enum DomainExceptionCode {
     JWT_MAL_FORMED(JWT.code + 4, "잘못된 형식의 JWT 토큰입니다. %s"),
     JWT_UNSUPPORTED(JWT.code + 5, "지원되지 않는 JWT 토큰입니다."),
     ILLEGAL_JWT_TOKEN(JWT.code + 6, "잘못된 JWT 토큰입니다."),
-    JWT_NO_AUTHORIZATION_HEADER(JWT.code + 7, "Authorization 헤더가 없습니다."),
+    NO_JWT_COOKIE(JWT.code + 7, "JWT 쿠키 정보가 없습니다."),
     JWT_TAMPERED(JWT.code + 8, "JWT 토큰이 변조되었습니다. %s"),
     JWT_BLACKLISTED(JWT.code + 9, "JWT 토큰이 블랙리스트에 등록되었습니다. %s"),
 

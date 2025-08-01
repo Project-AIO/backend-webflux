@@ -7,11 +7,12 @@ import com.idt.aiowebflux.exception.DomainExceptionCode;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.result.method.HandlerMethodArgumentResolver;
@@ -55,11 +56,15 @@ public class JwtTokenReactiveResolver implements HandlerMethodArgumentResolver {
     }
 
     private Mono<String> extractToken(ServerWebExchange exchange) {
-        String header = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (!StringUtils.hasText(header) || !header.startsWith(PREFIX)) {
-            return Mono.error(DomainExceptionCode.JWT_NO_AUTHORIZATION_HEADER.newInstance());
+        final MultiValueMap<String, HttpCookie> cookies = exchange.getRequest().getCookies();
+
+        if (cookies.containsKey("access_token")) {
+            HttpCookie cookie = cookies.getFirst("access_token");
+            if (cookie != null && StringUtils.hasText(cookie.getValue())) {
+                return Mono.just(cookie.getValue());
+            }
         }
-        return Mono.just(header.substring(PREFIX.length()));
+        return Mono.error(DomainExceptionCode.NO_JWT_COOKIE.newInstance());
     }
 
     private JwtPrincipal toPrincipal(Claims claims) {
